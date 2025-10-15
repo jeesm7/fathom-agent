@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Prompt {
+  id           String   @id @default(cuid())
+  key          String   @unique
+  description  String
+  system       String
+  userTemplate String
+  temperature  Float    @default(0.7)
+  topP         Float    @default(1.0)
+  maxTokens    Int      @default(4000)
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+}
+
+model ExampleDoc {
+  id                String   @id @default(cuid())
+  driveFileId       String
+  mimeType          String
+  title             String
+  vectorStoreFileId String?
+  kind              String
+  createdAt         DateTime @default(now())
+}
+
+model Run {
+  id               String    @id @default(cuid())
+  meetingId        String    @unique
+  fathomExternalId String?
+  status           String    @default("pending")
+  deliverables     String?
+  transcript       String?
+  metadata         String?
+  logJson          String?
+  createdAt        DateTime  @default(now())
+  finishedAt       DateTime?
+  outputs          Output[]
+}
+
+model Output {
+  id          String   @id @default(cuid())
+  runId       String
+  type        String
+  title       String?
+  docsId      String?
+  driveFileId String?
+  shareUrl    String?
+  gmailDraftId String?
+  extraJson   String?
+  createdAt   DateTime @default(now())
+  run         Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
+}

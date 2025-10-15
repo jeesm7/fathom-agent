@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+*.log
 
 # next.js
 /.next/
@@ -28,10 +29,11 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files (do not commit)
+.env
+.env*.local
+.env.production
 
 # vercel
 .vercel
@@ -39,3 +41,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# prisma
+/prisma/*.db
+/prisma/*.db-journal
+
+# testing
+/playwright-report/
+/playwright/.cache/
+/test-results/
+
+# Redis
+dump.rdb
