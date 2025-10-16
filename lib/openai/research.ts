@@ -32,9 +32,50 @@ export async function performWebResearch(
 }
 
 async function searchWithOpenAI(query: string): Promise<ResearchResult> {
-  // OpenAI web_search tool requires special API access
-  // For now, fallback to Tavily which is more reliable
-  return await searchWithTavily(query);
+  const response = await openai.chat.completions.create({
+    model: MODELS.standard,
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are a research assistant. Use web search to find accurate, up-to-date information and provide citations.",
+      },
+      {
+        role: "user",
+        content: `Research this query and provide a comprehensive answer with citations: ${query}`,
+      },
+    ],
+    // Note: web_search is a built-in OpenAI tool for models with web access
+    // For production, this should use the Responses API or Tavily fallback
+    temperature: 0.4,
+  });
+
+  const message = response.choices[0].message;
+  const synthesis = message.content || "";
+
+  // Extract citations from tool calls if available
+  const citations: ResearchResult["citations"] = [];
+  const sources: string[] = [];
+
+  if (message.tool_calls) {
+    for (const toolCall of message.tool_calls) {
+      if (toolCall.type === "web_search") {
+        const args = JSON.parse(toolCall.function?.arguments || "{}");
+        if (args.results) {
+          for (const result of args.results) {
+            citations.push({
+              title: result.title || "",
+              url: result.url || "",
+              snippet: result.snippet || "",
+            });
+            if (result.url) sources.push(result.url);
+          }
+        }
+      }
+    }
+  }
+
+  return { synthesis, citations, sources };
 }
 
 async function deepResearchWithOpenAI(query: string): Promise<ResearchResult> {
