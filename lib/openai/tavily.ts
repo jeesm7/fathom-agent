@@ -35,7 +35,7 @@ export async function searchWithTavily(query: string): Promise<ResearchResult> {
       snippet: result.content || "",
     }));
 
-    const sources = citations.map((c) => c.url);
+    const sources = citations.map((c: any) => c.url);
 
     return {
       synthesis: data.answer || "No answer provided",

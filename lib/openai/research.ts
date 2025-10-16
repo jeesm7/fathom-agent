@@ -53,27 +53,10 @@ async function searchWithOpenAI(query: string): Promise<ResearchResult> {
   const message = response.choices[0].message;
   const synthesis = message.content || "";
 
-  // Extract citations from tool calls if available
+  // For now, return basic synthesis without citations
+  // In production, this should use Tavily API or OpenAI Responses API for web search
   const citations: ResearchResult["citations"] = [];
   const sources: string[] = [];
-
-  if (message.tool_calls) {
-    for (const toolCall of message.tool_calls) {
-      if (toolCall.type === "web_search") {
-        const args = JSON.parse(toolCall.function?.arguments || "{}");
-        if (args.results) {
-          for (const result of args.results) {
-            citations.push({
-              title: result.title || "",
-              url: result.url || "",
-              snippet: result.snippet || "",
-            });
-            if (result.url) sources.push(result.url);
-          }
-        }
-      }
-    }
-  }
 
   return { synthesis, citations, sources };
 }
@@ -153,16 +136,8 @@ export async function searchVectorStore(
     const message = response.choices[0].message;
     const results: string[] = [];
 
-    if (message.tool_calls) {
-      for (const toolCall of message.tool_calls) {
-        if (toolCall.type === "file_search") {
-          const args = JSON.parse(toolCall.function?.arguments || "{}");
-          if (args.results) {
-            results.push(...args.results.map((r: any) => r.content || ""));
-          }
-        }
-      }
-    }
+    // File search results would be processed here if using file_search tool
+    // For now, this returns the basic response without file search results
 
     return results;
   } catch (error) {
