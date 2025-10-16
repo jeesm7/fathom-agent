@@ -3,14 +3,15 @@ import { prisma } from "@/lib/prisma";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   // TODO: Add authentication when NextAuth is configured
 
   const body = await request.json();
 
   const prompt = await prisma.prompt.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       description: body.description,
       system: body.system,
@@ -26,12 +27,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   // TODO: Add authentication when NextAuth is configured
 
   await prisma.prompt.delete({
-    where: { id: params.id },
+    where: { id },
   });
 
   return NextResponse.json({ success: true });
